@@ -7,7 +7,7 @@ import os
 import sys
 
 
-@astark.on_edited_message(filters.command(["start"]))
+@stark.on_edited_message(filters.command(["start"]))
 async def Start_msg(bot: stark , m: Message):
     await bot.send_photo(
     m.chat.id,
