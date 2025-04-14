@@ -49,7 +49,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 from base64 import b64encode, b64decode
 
-@stark.on_message(filters.command(["start"]))
+@astark.on_edited_message(filters.command(["start"]))
 async def account_login(bot: Client, m: Message):
     global cancel
     cancel = False
