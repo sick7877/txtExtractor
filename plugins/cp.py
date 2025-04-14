@@ -6,7 +6,7 @@ from pyrogram.types import Message
 from pyromod import listen
 import os
 
-@Client.on_message(filters.command(["cp"]) & ~filters.edited)
+@Client.on_message(filters.command(["cp"])
 async def account_login(bot: Client, m: Message):
     s = requests.Session()
     editable = await m.reply_text("**Send Token from ClassPlus App**")
