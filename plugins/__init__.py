@@ -39,5 +39,8 @@ async def restart_handler(_, m):
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 @stark.on_message(filters.command(["log"])
-async def log_msg(bot: stark , m: Message):   
+from pyrogram import Client, filters
+from pyrogram.types import Message
+
+async def log_msg(bot: Client, m: Message):   
     await bot.send_document(m.chat.id, "log.txt")
