@@ -6,13 +6,19 @@ from pyrogram.types import Message
 import cloudscraper
 import os
 
-@Client.on_message(filters.command(["exampur"])
+# Main command handler
+@Client.on_message(filters.command(["exampur"]))
 async def account_login(bot: Client, m: Message):
     await m.reply_text("Send ID & Password in this format: email*password")
 
     input1: Message = await bot.listen(m.chat.id)
     raw_text = input1.text
-    email, password = raw_text.split("*")
+    try:
+        email, password = raw_text.split("*")
+    except ValueError:
+        await m.reply_text("Invalid format. Please send as email*password")
+        return
+
     await input1.delete()
 
     login_url = "https://auth.exampurcache.xyz/auth/login"
@@ -31,18 +37,26 @@ async def account_login(bot: Client, m: Message):
         "password": password
     })
 
-    scraper = cloudscraper.create_scraper()
-    res = scraper.post(login_url, data=payload, headers=headers).content
-    output = json.loads(res)
-    token = output["data"]["authToken"]
+    try:
+        scraper = cloudscraper.create_scraper()
+        res = scraper.post(login_url, data=payload, headers=headers).content
+        output = json.loads(res)
+        token = output["data"]["authToken"]
+    except Exception as e:
+        await m.reply_text(f"Login failed: {e}")
+        return
 
     auth_headers = headers.copy()
     auth_headers["appauthtoken"] = token
 
     await m.reply_text("**Login Successful**")
 
-    res1 = requests.get("https://auth.exampurcache.xyz/mycourses", headers=auth_headers)
-    b_data = res1.json()['data']
+    try:
+        res1 = requests.get("https://auth.exampurcache.xyz/mycourses", headers=auth_headers)
+        b_data = res1.json()['data']
+    except:
+        await m.reply_text("Failed to retrieve batches.")
+        return
 
     batch_text = "**BATCH-ID - BATCH NAME**\n\n"
     for data in b_data:
@@ -54,11 +68,15 @@ async def account_login(bot: Client, m: Message):
     input2 = await bot.listen(m.chat.id)
     batch_id = input2.text
 
-    subj_res = scraper.get(
-        f"https://auth.exampurcache.xyz/course_subject/{batch_id}",
-        headers=auth_headers
-    ).content
-    subj_data = json.loads(subj_res)["data"]
+    try:
+        subj_res = scraper.get(
+            f"https://auth.exampurcache.xyz/course_subject/{batch_id}",
+            headers=auth_headers
+        ).content
+        subj_data = json.loads(subj_res)["data"]
+    except:
+        await m.reply_text("Failed to fetch subjects.")
+        return
 
     subj_ids = "".join([f"{s['_id']}&" for s in subj_data]).strip("&")
     await m.reply_text(f"Send the **Subject IDs** to download like `id1&id2`\n\nAll IDs:\n```{subj_ids}```")
