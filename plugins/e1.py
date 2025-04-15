@@ -1,239 +1,103 @@
-#  MIT License
-#
-#  Copyright (c) 2019-present Dan <https://github.com/delivrance>
-#
-#  Permission is hereby granted, free of charge, to any person obtaining a copy
-#  of this software and associated documentation files (the "Software"), to deal
-#  in the Software without restriction, including without limitation the rights
-#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#  copies of the Software, and to permit persons to whom the Software is
-#  furnished to do so, subject to the following conditions:
-#
-#  The above copyright notice and this permission notice shall be included in all
-#  copies or substantial portions of the Software.
-#
-#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-#  SOFTWARE
-#  Code edited By Cryptostark
-import urllib
-import urllib.parse
-import requests
-import json
-import subprocess
-from pyrogram.types.messages_and_media import message
-import helper
-from pyromod import listen
-from pyrogram.types import Message
-import tgcrypto
-import pyrogram
-from pyrogram import Client, filters
-from pyrogram.types.messages_and_media import message
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from pyrogram.errors import FloodWait
-import time
-from pyrogram.types import User, Message
-from p_bar import progress_bar
-from subprocess import getstatusoutput
-import logging
-import os
-import sys
-import re
-from pyrogram import Client as bot
-import cloudscraper
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import unpad
-from base64 import b64encode, b64decode
+MIT License
 
-@bot.on_message(filters.command(["e1"]) & ~filters.edited)
-async def account_login(bot: Client, m: Message):
-    global cancel
-    cancel = False
-    editable = await m.reply_text(
-        "Send **ID & Password** in this manner otherwise bot will not respond.\n\nSend like this:-  **ID*Password**")
-    rwa_url = "https://e1coachingcenterapi.classx.co.in/post/userLogin"
-    hdr = {"Auth-Key": "appxapi",
-           "User-Id": "-2",
-           "Authorization": "",
-           "User_app_category": "",
-           "Language": "en",
-           "Content-Type": "application/x-www-form-urlencoded",
-           "Content-Length": "233",
-           "Accept-Encoding": "gzip, deflate",
-           "User-Agent": "okhttp/4.9.1"
-          }
-    info = {"email": "", "password": ""}
-    #7355971781*73559717
-    input1: Message = await bot.listen(editable.chat.id)
-    raw_text = input1.text
-    info["email"] = raw_text.split("*")[0]
-    info["password"] = raw_text.split("*")[1]
-    await input1.delete(True)
-    scraper = cloudscraper.create_scraper()
-    res = scraper.post(rwa_url, data=info, headers=hdr).content
-    output = json.loads(res)
-    #print(output)
-    userid = output["data"]["userid"]
-    token = output["data"]["token"]
-    hdr1 = {
-        "Host": "e1coachingcenterapi.classx.co.in",
-        "Client-Service": "Appx",
-        "Auth-Key": "appxapi",
-        "User-Id": userid,
-        "Authorization": token
-        }
-    #print(userid)
-    #print(token)
-    await editable.edit("**login Successful**")
-    # await editable.edit(f"You have these Batches :-\n{raw_text}"
-    cour_url = "https://e1coachingcenterapi.classx.co.in/get/mycourse?userid="
+Copyright (c) 2019-present Dan https://github.com/delivrance
 
-    res1 = requests.get("https://e1coachingcenterapi.classx.co.in/get/mycourse?userid="+userid, headers=hdr1)
-    b_data = res1.json()['data']
-    cool = ""
-    for data in b_data:
-        t_name =data['course_name']
-        FFF = "**BATCH-ID - BATCH NAME - INSTRUCTOR**"
-        aa = f" ```{data['id']}```      - **{data['course_name']}**\n\n"
-        # aa=f"**Batch Name -** {data['batchName']}\n**Batch ID -** ```{data['id']}```\n**By -** {data['instructorName']}\n\n"
-        if len(f'{cool}{aa}') > 4096:
-            print(aa)
-            cool = ""
-        cool += aa
-    await editable.edit(f'{"**You have these batches :-**"}\n\n{FFF}\n\n{cool}')
-    editable1 = await m.reply_text("**Now send the Batch ID to Download**")
-    input2 = message = await bot.listen(editable.chat.id)
-    raw_text2 = input2.text
+Code edited by Cryptostark
 
-    # sub_id_url="https://rgvikramjeetapi.classx.co.in/get/allsubjectfrmlivecourseclass?courseid="
-    scraper = cloudscraper.create_scraper()
-    html = scraper.get("https://e1coachingcenterapi.classx.co.in/get/allsubjectfrmlivecourseclass?courseid=" + raw_text2,headers=hdr1).content
-    output0 = json.loads(html)
-    subjID = output0["data"]
-    await m.reply_text(subjID)
-    #SubiD = input("Enter the Subject Id Show in above Response")
+import os import json import requests import cloudscraper from base64 import b64decode from Crypto.Cipher import AES from Crypto.Util.Padding import unpad from pyrogram import Client, filters from pyrogram.types import Message from pyromod import listen
 
-    editable1 = await m.reply_text("**Enter the Subject Id Show in above Response")
-    input3 = message = await bot.listen(editable.chat.id)
-    raw_text3 = input3.text
+@Client.on_message(filters.command(["e1"]) & ~filters.edited) async def account_login(bot: Client, m: Message): editable = await m.reply_text("Send ID & Password like this: ID*Password")
 
-    res3 = requests.get("https://e1coachingcenterapi.classx.co.in/get/alltopicfrmlivecourseclass?courseid=" + raw_text2,"&subjectid=" + raw_text3, headers=hdr1)
-    b_data2 = res3.json()['data']
-    # print(b_data2)
-    vj = ""
-    for data in b_data2:
-        tids = (data["topicid"])
-        idid = f"{tids}&"
-        if len(f"{vj}{idid}") > 4096:
-            ##await m.reply_text(idid)
-            vj = ""
-        vj += idid
-    #print(vj)
-    vp = ""
-    for data in b_data2:
-        tn = (data["topic_name"])
-        tns = f"{tn}&"
-        if len(f"{vp}{tn}") > 4096:
-            ##await m.reply_text(tns)
-            vp = ""
-        vp += tns
-    #print(vp)
-    cool1 = ""
-    #BBB = ''
-    for data in b_data2:
-        t_name = (data["topic_name"])
-        tid = (data["topicid"])
-        zz = len(tid)
-        BBB = f"{'**TOPIC-ID    - TOPIC     - VIDEOS**'}\n"
-        hh = f"```{tid}```     - **{t_name} - ({zz})**\n"
-        #hh = f"**Topic -** {t_name}\n**Topic ID - ** ```{tid}```\nno. of videos are : {zz}\n\n"
-        if len(f'{cool1}{hh}') > 4096:
-            cool1 = ""
-        cool1 += hh
-    await m.reply_text(f'Batch details of **{t_name}** are:\n\n{BBB}\n\n{cool1}')
+login_url = "https://e1coachingcenterapi.classx.co.in/post/userLogin"
+headers = {
+    "Auth-Key": "appxapi",
+    "User-Id": "-2",
+    "Authorization": "",
+    "User_app_category": "",
+    "Language": "en",
+    "Content-Type": "application/x-www-form-urlencoded",
+    "Accept-Encoding": "gzip, deflate",
+    "User-Agent": "okhttp/4.9.1"
+}
 
-    editable= await m.reply_text(f"Now send the **Topic IDs** to Download\n\nSend like this **1&2&3&4** so on\nor copy paste or edit **below ids** according to you :\n\n**Enter this to download full batch :-**\n```{vj}```")
-    input4 = message = await bot.listen(editable.chat.id)
-    raw_text4 = input4.text
+creds_msg = await bot.listen(editable.chat.id)
+creds = creds_msg.text.strip().split("*")
+email, password = creds[0], creds[1]
 
-    editable3 = await m.reply_text("**Now send the Resolution**")
-    input5 = message = await bot.listen(editable.chat.id)
-    raw_text5 = input5.text
-    try:
-        xv = raw_text4.split('&')
-        for y in range(0,len(xv)):
-            t =xv[y]
+scraper = cloudscraper.create_scraper()
+login_data = {"email": email, "password": password}
+res = scraper.post(login_url, data=login_data, headers=headers).json()
 
-            hdr11 = {
-                    "Host": "e1coachingcenterapi.classx.co.in",
-                    "Client-Service": "Appx",
-                    "Auth-Key": "appxapi",
-                    "User-Id": userid,
-                    "Authorization": token
-                    }
+user_id = res["data"]["userid"]
+token = res["data"]["token"]
 
-            res4 = requests.get("https://e1coachingcenterapi.classx.co.in/get/livecourseclassbycoursesubtopconceptapiv3?topicid=" + t + "&start=-1&conceptid=1&courseid=" + raw_text2 + "&subjectid=" + raw_text3,headers=hdr11).json()
+auth_headers = {
+    "Host": "e1coachingcenterapi.classx.co.in",
+    "Client-Service": "Appx",
+    "Auth-Key": "appxapi",
+    "User-Id": user_id,
+    "Authorization": token
+}
 
-            topicid = res4["data"]
-            vj = ""
-            for data in topicid:
-                tids = (data["Title"])
-                idid = f"{tids}"
-                if len(f"{vj}{idid}") > 4096:
-                    vj = ""
-                vj += idid
+await editable.edit("**Login successful! Fetching batches...**")
+course_url = f"https://e1coachingcenterapi.classx.co.in/get/mycourse?userid={user_id}"
+courses = requests.get(course_url, headers=auth_headers).json()["data"]
 
-            vp = ""
-            for data in topicid:
-                tn = (data["download_link"])
-                tns = f"{tn}"
-                if len(f"{vp}{tn}") > 4096:
-                    vp = ""
-        # print("Download Links: \n", tns
-                vp += tn
-            vs = ""
-            for data in topicid:
-                tn0 = (data["pdf_link"])
-                tns0 = f"{tn0}"
-                if len(f"{vs}{tn0}") > 4096:
-                    vs = ""
-            # print("Download Links: \n", tns
-                vs += tn0
-            cool2 = ""
-            #BBB1 = ''
-            for data in topicid:
-                if data["embed_url"]:
-                    b64 = (data["embed_url"])
-                else:
-                    b64 = (data["pdf_link"])
-                #if data["encrypted_links"]:
-                #    b64 = (data["encrypted_links"][0]["path"])
-                #else:
-                #    b64 = (data["pdf_link"])
-                tid = (data["Title"])
-                zz = len(tid)
-                key = "638udh3829162018".encode("utf8")
-                iv = "fedcba9876543210".encode("utf8")
-                ciphertext = bytearray.fromhex(b64decode(b64.encode()).hex())
+batch_info = "**BATCH-ID - BATCH NAME**\n"
+for course in courses:
+    batch_info += f"```{course['id']}``` - **{course['course_name']}**\n"
+
+await m.reply_text(batch_info)
+
+editable2 = await m.reply_text("Send the Batch ID to continue")
+batch_id_msg = await bot.listen(editable2.chat.id)
+batch_id = batch_id_msg.text
+
+subj_url = f"https://e1coachingcenterapi.classx.co.in/get/allsubjectfrmlivecourseclass?courseid={batch_id}"
+subjects = scraper.get(subj_url, headers=auth_headers).json()["data"]
+await m.reply_text(str(subjects))
+
+editable3 = await m.reply_text("Enter the Subject ID from the above response")
+subject_id_msg = await bot.listen(editable3.chat.id)
+subject_id = subject_id_msg.text
+
+topic_url = f"https://e1coachingcenterapi.classx.co.in/get/alltopicfrmlivecourseclass?courseid={batch_id}&subjectid={subject_id}"
+topics = requests.get(topic_url, headers=auth_headers).json()["data"]
+
+topic_ids = "&".join([topic["topicid"] for topic in topics])
+topic_list = "\n".join([f"```{t['topicid']}``` - **{t['topic_name']}**" for t in topics])
+
+await m.reply_text(f"**TOPICS:**\n{topic_list}")
+editable4 = await m.reply_text(f"Send Topic IDs to download (e.g. `1&2&3`) or this to download all:\n```{topic_ids}```")
+selected_ids_msg = await bot.listen(editable4.chat.id)
+selected_ids = selected_ids_msg.text.split('&')
+
+editable5 = await m.reply_text("Now send the resolution")
+res_msg = await bot.listen(editable5.chat.id)
+
+mm = "E1-Coaching-Center"
+os.makedirs("./downloads", exist_ok=True)
+
+for topic_id in selected_ids:
+    content_url = f"https://e1coachingcenterapi.classx.co.in/get/livecourseclassbycoursesubtopconceptapiv3?topicid={topic_id}&start=-1&conceptid=1&courseid={batch_id}&subjectid={subject_id}"
+    content = requests.get(content_url, headers=auth_headers).json()["data"]
+
+    for item in content:
+        title = item["Title"]
+        embed = item.get("embed_url") or item.get("pdf_link")
+        if embed:
+            try:
+                key = b"638udh3829162018"
+                iv = b"fedcba9876543210"
+                ciphertext = bytearray.fromhex(b64decode(embed.encode()).hex())
                 cipher = AES.new(key, AES.MODE_CBC, iv)
-                plaintext = unpad(cipher.decrypt(ciphertext), AES.block_size)
-                #print(plaintext)
-                b=plaintext.decode('utf-8')
-                cc0 = (f"{tid}:{b}")
-                if len(f'{cool2}{cc0}') > 4096:
-                    ##await m.reply_text(hh)
-                    cool2 = ""
-                cool2 += cc0
-                mm = "E1-Coaching-Center"
-                #await m.reply_text(BBB1, hh)
-                
-                with open(f'{mm}.txt', 'a') as f:
-                    f.write(f"{tid}:{b}\n")
-        await m.reply_document(f"{mm}.txt")
-    except Exception as e:
-        await m.reply_text(str(e))
-    await m.reply_text("Done") 
+                decrypted = unpad(cipher.decrypt(ciphertext), AES.block_size)
+                link = decrypted.decode("utf-8")
+                with open(f"./downloads/{mm}.txt", "a") as f:
+                    f.write(f"{title}:{link}\n")
+            except Exception as e:
+                await m.reply_text(f"Error decrypting: {str(e)}")
+
+await m.reply_document(f"./downloads/{mm}.txt")
+await m.reply_text("Done!")
+
