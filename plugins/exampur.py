@@ -21,13 +21,14 @@ async def account_login(bot: Client, m: Message):
 
     await input1.delete()
 
-    login_url = "https://auth.exampurcache.xyz/auth/login"
+    BASE_URL = "https://exampur.videocrypt.in"
+    login_url = f"{BASE_URL}/auth/login"
     headers = {
         "appauthtoken": "no_token",
         "User-Agent": "Dart/2.15(dart:io)",
         "content-type": "application/json; charset=UTF-8",
         "Accept-Encoding": "gzip",
-        "host": "auth.exampurcache.xyz"
+        "host": "exampur.videocrypt.in"
     }
 
     payload = json.dumps({
@@ -52,7 +53,7 @@ async def account_login(bot: Client, m: Message):
     await m.reply_text("**Login Successful**")
 
     try:
-        res1 = requests.get("https://auth.exampurcache.xyz/mycourses", headers=auth_headers)
+        res1 = requests.get(f"{BASE_URL}/mycourses", headers=auth_headers)
         b_data = res1.json()['data']
     except:
         await m.reply_text("Failed to retrieve batches.")
@@ -70,7 +71,7 @@ async def account_login(bot: Client, m: Message):
 
     try:
         subj_res = scraper.get(
-            f"https://auth.exampurcache.xyz/course_subject/{batch_id}",
+            f"{BASE_URL}/course_subject/{batch_id}",
             headers=auth_headers
         ).content
         subj_data = json.loads(subj_res)["data"]
@@ -87,7 +88,7 @@ async def account_login(bot: Client, m: Message):
     try:
         for subj_id in subj_input:
             chapter_res = requests.get(
-                f"https://auth.exampurcache.xyz/course_material/chapter/{subj_id}/{batch_id}",
+                f"{BASE_URL}/course_material/chapter/{subj_id}/{batch_id}",
                 headers=auth_headers
             )
             chapters = chapter_res.json()['data']
@@ -97,7 +98,7 @@ async def account_login(bot: Client, m: Message):
                 enc_chap = enc_chap.replace("%28", "(").replace("%29", ")").replace("%26", "&")
 
                 material_res = requests.get(
-                    f"https://auth.exampurcache.xyz/course_material/material/{subj_id}/{batch_id}/{enc_chap}",
+                    f"{BASE_URL}/course_material/material/{subj_id}/{batch_id}/{enc_chap}",
                     headers=auth_headers
                 )
                 materials = material_res.json()['data']
