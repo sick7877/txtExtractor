@@ -24,6 +24,14 @@ from Crypto.Util.Padding import unpad
 import helper
 from p_bar import progress_bar
 
+# FIX: Define your bot client here
+stark = Client(
+    "my_bot",
+    api_id=28712726,  # Replace with your actual API ID
+    api_hash="06acfd441f9c3402ccdb1945e8e2a93b",  # Replace with your actual API Hash
+    bot_token="8190086252:AAHkseLMEdl_Hxaoz38C9vQaGujXqIpHVoY"  # Replace with your actual Bot Token
+)
+
 @stark.on_message(filters.command(["cpd"]))
 async def account_login(bot: Client, m: Message):
     editable = await m.reply_text("Send txt file**")
@@ -34,7 +42,7 @@ async def account_login(bot: Client, m: Message):
     try:
         with open(x, "r") as f:
             content = f.read().split("\n")
-        links = [i.split(":", 1) for i in content]
+        links = [i.split(":", 1) for i in content if ":" in i]
         os.remove(x)
     except:
         await m.reply_text("Invalid file input.")
@@ -76,7 +84,7 @@ async def account_login(bot: Client, m: Message):
             if "classplus" in url:
                 headers = {
                     'Host': 'api.classplusapp.com',
-                    'x-access-token': f'{token}',
+                    'x-access-token': f'{token}',  # Make sure token is defined somewhere
                     'user-agent': 'Mobile-Android',
                     'app-version': '1.4.37.1',
                     'api-version': '18',
