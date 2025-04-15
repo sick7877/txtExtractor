@@ -24,7 +24,7 @@ from Crypto.Util.Padding import unpad
 import helper
 from p_bar import progress_bar
 
-@Client.on_message(filters.command(["cpd"]) & ~filters.edited)
+@Client.on_message(filters.command(["cpd"])
 async def account_login(bot: Client, m: Message):
     editable = await m.reply_text("Send txt file**")
     input: Message = await bot.listen(editable.chat.id)
