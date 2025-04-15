@@ -6,7 +6,7 @@ from pyrogram.types import Message
 import cloudscraper
 import os
 
-@Client.on_message(filters.command(["exampur"]) & ~filters.edited)
+@Client.on_message(filters.command(["exampur"])
 async def account_login(bot: Client, m: Message):
     await m.reply_text("Send ID & Password in this format: email*password")
 
