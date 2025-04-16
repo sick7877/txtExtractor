@@ -11,8 +11,6 @@ import logging
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, User
 from pyrogram.errors import FloodWait
-from pyrogram.types.messages_and_media import message
-from pyrogram import Client as bot
 from pyromod import listen
 import helper
 import tgcrypto
@@ -23,13 +21,13 @@ from base64 import b64encode, b64decode
 from p_bar import progress_bar
 from subprocess import getstatusoutput
 
-@bot.on_message(filters.command(["pw"]))
+@Client.on_message(filters.command(["pw"]))
 async def account_login(bot: Client, m: Message):
     editable = await m.reply_text(
         "Send Auth code in this manner otherwise bot will not respond.\n\nSend like this:-  AUTH CODE"
     )
     input1: Message = await bot.listen(editable.chat.id)
-    raw_text1 = input1.text
+    raw_text1 = input1.text.strip()
 
     headers = {
         'Host': 'api.penpencil.xyz',
@@ -62,88 +60,90 @@ async def account_login(bot: Client, m: Message):
             'https://api.penpencil.xyz/v3/batches/my-batches', params=params, headers=headers
         ).json()["data"]
         for data in response:
-            batch = data["name"]
-            aa = f"```{data['name']}```  :  ```{data['_id']}\n```"
-            await m.reply_text(aa)
+            batch_name = data["name"]
+            batch_id = data["_id"]
+            msg = f"`{batch_name}` : `{batch_id}`"
+            await m.reply_text(msg)
     except Exception as e:
         await m.reply_text(f"Failed to fetch batches: {e}")
         return
 
     editable1 = await m.reply_text("**Now send the Batch ID to Download**")
     input3 = await bot.listen(editable.chat.id)
-    raw_text3 = input3.text
+    raw_text3 = input3.text.strip()
 
     try:
-        response2 = requests.get(
+        subjects = requests.get(
             f'https://api.penpencil.xyz/v3/batches/{raw_text3}/details', headers=headers
         ).json()["data"]["subjects"]
     except Exception as e:
         await m.reply_text(f"Failed to fetch batch details: {e}")
         return
 
-    await editable1.edit("subject : subjectId")
-    vj = ""
-    for data in response2:
-        bb = f"{data['_id']}&"
-        await m.reply_text(bb)
-        vj += bb
+    await editable1.edit("Subject IDs:")
+    subject_ids = ""
+    for subject in subjects:
+        sid = subject['_id']
+        await m.reply_text(sid)
+        subject_ids += sid + "&"
 
-    editable2 = await m.reply_text(f"**Enter this to download full batch :-**\n```{vj}```")
+    editable2 = await m.reply_text(f"**Enter this to download full batch :-**\n```{subject_ids}```")
     input4 = await bot.listen(editable.chat.id)
-    raw_text4 = input4.text
+    raw_text4 = input4.text.strip()
 
     await m.reply_text("**Enter resolution**")
     input5: Message = await bot.listen(editable.chat.id)
-    raw_text5 = input5.text
+    resolution = input5.text.strip()
 
     editable4 = await m.reply_text(
         "Now send the **Thumb url** Eg : ```https://telegra.ph/file/d9e24878bd4aba05049a1.jpg```\n\nor Send **no**"
     )
     input6 = await bot.listen(editable.chat.id)
-    raw_text6 = input6.text
-    thumb = raw_text6
-    if thumb.startswith("http://") or thumb.startswith("https://"):
-        getstatusoutput(f"wget '{thumb}' -O 'thumb.jpg'")
+    raw_text6 = input6.text.strip()
+
+    if raw_text6.startswith("http://") or raw_text6.startswith("https://"):
+        getstatusoutput(f"wget '{raw_text6}' -O 'thumb.jpg'")
         thumb = "thumb.jpg"
     else:
         thumb = None
 
     try:
-        xv = raw_text4.strip('&').split('&')
-        for t in xv:
-            if not t:
+        subject_id_list = raw_text4.strip("&").split("&")
+        file_name = f"{raw_text3}_batch_links.txt"
+        for sid in subject_id_list:
+            if not sid:
                 continue
             all_data = []
-            for i in range(1, 5):
-                params_content = {
-                    'page': str(i),
+            for page in range(1, 5):
+                content_params = {
+                    'page': str(page),
                     'tag': '',
                     'contentType': 'exercises-notes-videos',
                     'ut': ''
                 }
-                url = f'https://api.penpencil.xyz/v2/batches/{raw_text3}/subject/{t}/contents'
-                response = requests.get(url, params=params_content, headers=headers)
+                content_url = f'https://api.penpencil.xyz/v2/batches/{raw_text3}/subject/{sid}/contents'
+                response = requests.get(content_url, params=content_params, headers=headers)
                 try:
-                    content_data = response.json()["data"]
+                    content_data = response.json().get("data", [])
                     all_data.extend(content_data)
                 except Exception as e:
                     await m.reply_text(
-                        f"Error fetching subject `{t}` page {i}: {str(e)}\nRaw response: {response.text}"
+                        f"Error fetching subject `{sid}` page {page}: {str(e)}\nRaw response: {response.text}"
                     )
                     continue
 
-            for data in all_data:
-                class_title = data.get("topic")
-                class_url = (
-                    data.get("url", "")
+            for content in all_data:
+                title = content.get("topic")
+                url = (
+                    content.get("url", "")
                     .replace("d1d34p8vz63oiq", "d3nzo6itypaz07")
                     .replace("mpd", "m3u8")
                     .strip()
                 )
-                if class_title and class_url:
-                    with open(f"{batch}.txt", 'a') as f:
-                        f.write(f"{class_title}:{class_url}\n")
+                if title and url:
+                    with open(file_name, "a", encoding="utf-8") as f:
+                        f.write(f"{title}:{url}\n")
 
-        await m.reply_document(f"{batch}.txt")
+        await m.reply_document(file_name)
     except Exception as e:
         await m.reply_text(f"Unexpected error: {e}")
