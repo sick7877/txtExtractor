@@ -1,3 +1,4 @@
+
 import json
 import logging
 import os
@@ -29,10 +30,8 @@ bot = Client(
 
 @bot.on_message(filters.command(["down"]) & ~filters.edited)
 async def account_login(bot: Client, m: Message):
-    editable = await m.reply_text(
-        "Send **ID & Password** like this: **ID*Password**"
-    )
-    
+    editable = await m.reply_text("Send **ID & Password** like this: **ID*Password**")
+
     input1: Message = await bot.listen(editable.chat.id)
     raw_text = input1.text
     await input1.delete(True)
@@ -61,7 +60,7 @@ async def account_login(bot: Client, m: Message):
         response = requests.post(
             'https://ignitedminds.live/android/User/login_user',
             headers=headers,
-            data=json.dumps(info)
+            data=json.dumps(info)  # Proper JSON data
         )
         data = response.json()
         userid = data["id"]
