@@ -1,10 +1,9 @@
+
 import os
 import requests
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from subprocess import getstatusoutput
-
-bot = Client("pw_downloader", api_id=28712726, api_hash="06acfd441f9c3402ccdb1945e8e2a93b", bot_token="8190086252:AAHkseLMEdl_Hxaoz38C9vQaGujXqIpHVoY")
 
 @Client.on_message(filters.command(["pw"]))
 async def account_login(bot: Client, m: Message):
@@ -61,11 +60,10 @@ async def account_login(bot: Client, m: Message):
 
     await m.reply_text("**Send Thumb URL or type `no`:**")
     thumb_input = (await bot.listen(editable3.chat.id)).text.strip()
+    thumb = None
     if thumb_input.lower() != "no":
         getstatusoutput(f"wget '{thumb_input}' -O 'thumb.jpg'")
         thumb = "thumb.jpg"
-    else:
-        thumb = None
 
     try:
         for subj_id in raw_subject_ids.strip('&').split('&'):
@@ -97,5 +95,3 @@ async def account_login(bot: Client, m: Message):
 
     except Exception as e:
         await m.reply_text(f"Unexpected error: {str(e)}")
-
-bot.run()
