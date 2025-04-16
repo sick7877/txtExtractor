@@ -4,9 +4,9 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from subprocess import getstatusoutput
 
-bot = Client("pw_downloader", api_id=12345, api_hash="your_api_hash", bot_token="your_bot_token")
+bot = Client("pw_downloader", api_id=28712726, api_hash="06acfd441f9c3402ccdb1945e8e2a93b", bot_token="8190086252:AAHkseLMEdl_Hxaoz38C9vQaGujXqIpHVoY")
 
-@bot.on_message(filters.command(["pw"]))
+@Client.on_message(filters.command(["pw"]))
 async def account_login(bot: Client, m: Message):
     editable = await m.reply_text("Send Auth code like this:\n\n`AUTH CODE`")
     input1: Message = await bot.listen(editable.chat.id)
